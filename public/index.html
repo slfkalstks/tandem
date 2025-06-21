@@ -683,10 +683,73 @@
     
     .chart-canvas {
       width: 100%;
-      height: 300px;
+      height: 300px !important;
+      max-height: 300px !important;
       background: rgba(255,255,255,0.02);
       border-radius: 8px;
       margin-top: 10px;
+    }
+    
+    /* 테이블 스타일 */
+    .table-container {
+      margin-top: 10px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--main-bg);
+    }
+    
+    .data-table thead th {
+      background: var(--sidebar-bg);
+      color: #fff;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    
+    .data-table tbody td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--sidebar-text);
+    }
+    
+    .data-table tbody tr:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    
+    .data-table tbody tr:nth-child(even) {
+      background: rgba(255,255,255,0.02);
+    }
+    
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: 600;
+      text-align: center;
+      min-width: 50px;
+      display: inline-block;
+    }
+    
+    .status-badge.open {
+      background: rgba(255, 107, 107, 0.2);
+      color: #ff6b6b;
+      border: 1px solid rgba(255, 107, 107, 0.4);
+    }
+    
+    .status-badge.closed {
+      background: rgba(40, 167, 69, 0.2);
+      color: #28a745;
+      border: 1px solid rgba(40, 167, 69, 0.4);
     }
     
     /* 에러/성공 메시지 */
@@ -755,14 +818,11 @@
       <span>🏗️</span> Digital Twin Dashboard
     </div>
     <div class="header-menu">
-      <button class="header-btn" onclick="showPage('viewer')">
-        3D 뷰어
+      <button class="header-btn" onclick="showPage('viewer')" id="home-btn">
+        🏠 홈
       </button>
-      <button class="header-btn" onclick="showPage('statistics')">
+      <button class="header-btn" onclick="showPage('statistics')" id="stats-btn">
         📊 통계
-      </button>
-      <button class="header-btn" onclick="openGoogleSheetsConfig()">
-        🔗 API 설정
       </button>
       <button class="header-btn" id="connect-btn" onclick="initializeTandem()">
         <span class="status-indicator" id="status-indicator"></span>
@@ -897,11 +957,11 @@
                 <span class="stat-card-title">평균 온도</span>
                 <span class="stat-card-icon">🌡️</span>
               </div>
-              <div class="stat-value" id="avg-temp">23.5°C</div>
+              <div class="stat-value" id="avg-temp">--</div>
               <div class="stat-description">지난 주 대비</div>
               <div class="stat-trend">
-                <span class="trend-up">▲ 2.3°C</span>
-                <span>상승</span>
+                <span class="trend-neutral">--</span>
+                <span>데이터 없음</span>
               </div>
             </div>
 
@@ -910,11 +970,11 @@
                 <span class="stat-card-title">평균 습도</span>
                 <span class="stat-card-icon">💧</span>
               </div>
-              <div class="stat-value" id="avg-humidity">58%</div>
+              <div class="stat-value" id="avg-humidity">--</div>
               <div class="stat-description">지난 주 대비</div>
               <div class="stat-trend">
-                <span class="trend-down">▼ 3%</span>
-                <span>감소</span>
+                <span class="trend-neutral">--</span>
+                <span>데이터 없음</span>
               </div>
             </div>
 
@@ -923,11 +983,11 @@
                 <span class="stat-card-title">총 에너지 소비</span>
                 <span class="stat-card-icon">⚡</span>
               </div>
-              <div class="stat-value" id="total-energy">1,247 kWh</div>
+              <div class="stat-value" id="total-energy">--</div>
               <div class="stat-description">지난 주 대비</div>
               <div class="stat-trend">
-                <span class="trend-neutral">→ 0.5%</span>
-                <span>유지</span>
+                <span class="trend-neutral">--</span>
+                <span>데이터 없음</span>
               </div>
             </div>
 
@@ -936,11 +996,11 @@
                 <span class="stat-card-title">문 개폐 횟수</span>
                 <span class="stat-card-icon">🚪</span>
               </div>
-              <div class="stat-value" id="door-events">156</div>
+              <div class="stat-value" id="door-events">--</div>
               <div class="stat-description">지난 주 대비</div>
               <div class="stat-trend">
-                <span class="trend-up">▲ 12</span>
-                <span>증가</span>
+                <span class="trend-neutral">--</span>
+                <span>데이터 없음</span>
               </div>
             </div>
           </div>
@@ -972,13 +1032,68 @@
 
           <div class="chart-container">
             <div class="chart-header">
-              <span class="chart-title">문 상태 모니터링</span>
+              <span class="chart-title">습도 변화 추이</span>
               <div class="chart-controls">
-                <button class="chart-btn active" onclick="setChartPeriod('doors', 'realtime')">실시간</button>
-                <button class="chart-btn" onclick="setChartPeriod('doors', 'day')">일간</button>
+                <button class="chart-btn active" onclick="setChartPeriod('humidity', 'day')">일간</button>
+                <button class="chart-btn" onclick="setChartPeriod('humidity', 'week')">주간</button>
+                <button class="chart-btn" onclick="setChartPeriod('humidity', 'month')">월간</button>
               </div>
             </div>
-            <canvas id="doors-chart" class="chart-canvas"></canvas>
+            <canvas id="humidity-chart" class="chart-canvas"></canvas>
+          </div>
+
+          <!-- 문 상태 모니터링 테이블 -->
+          <div class="chart-container">
+            <div class="chart-header">
+              <span class="chart-title">문 상태 모니터링</span>
+              <div class="chart-controls">
+                <button class="chart-btn" onclick="refreshDoorData()">🔄 새로고침</button>
+              </div>
+            </div>
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>문 이름</th>
+                    <th>현재 상태</th>
+                    <th>마지막 변경</th>
+                    <th>오늘 개폐 횟수</th>
+                    <th>상태</th>
+                  </tr>
+                </thead>
+                <tbody id="door-status-table">
+                  <!-- 문 상태 데이터가 여기에 표시됩니다 -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- 전체 데이터 테이블 -->
+          <div class="chart-container">
+            <div class="chart-header">
+              <span class="chart-title">전체 데이터 (최근 20개)</span>
+              <div class="chart-controls">
+                <button class="chart-btn" onclick="refreshDataTable()">🔄 새로고침</button>
+                <button class="chart-btn" onclick="exportDataTable()">📥 CSV 다운로드</button>
+              </div>
+            </div>
+            <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>시간</th>
+                    <th>온도 (°C)</th>
+                    <th>습도 (%)</th>
+                    <th>에너지 (kWh)</th>
+                    <th>문 이벤트</th>
+                    <th>조도 (lux)</th>
+                  </tr>
+                </thead>
+                <tbody id="all-data-table">
+                  <!-- 전체 데이터가 여기에 표시됩니다 -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -1040,8 +1155,22 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   
   <script>
-    // ====== 사용자 설정 부분 ======
+    // ====== Google Sheets API 설정 (하드코딩) ======
+    const GOOGLE_SHEETS_CONFIG = {
+      apiKey: "YOUR_GOOGLE_SHEETS_API_KEY_HERE",
+      spreadsheetId: "YOUR_SPREADSHEET_ID_HERE", 
+      sheetName: "데이터",
+      columnMapping: {
+        timestamp: "A",
+        temperature: "B", 
+        humidity: "C",
+        energy: "D",
+        door_events: "E",
+        illumination: "F"
+      }
+    };
     
+    // ====== Tandem API 설정 ======
     // TODO: 서버 환경에서는 이 값들을 제거하고 /api/auth/token API를 사용하세요
     // 클라이언트 전용 개발 시에만 사용 (프로덕션에서는 보안상 권장하지 않음)
     const APS_CLIENT_ID = "YOUR_CLIENT_ID_HERE";
@@ -1063,53 +1192,48 @@
     let doorMarkers = [];
     let isGoogleSheetsConnected = false;
     let dataLogInterval = null;
+    let syncInterval = null;
     
-    // 문 정보 (실제 시설에서는 API나 Tandem에서 가져와야 함)
+    // 문 정보 (동아리 방 문 하나만 모니터링)
     const doorConfig = [
-      { id: 'door1', name: '정문', position: [0, 0, 0], status: 'closed', dbId: 100 },
-      { id: 'door2', name: '비상문', position: [10, 0, 0], status: 'closed', dbId: 101 },
-      { id: 'door3', name: '화장실문', position: [-5, 5, 0], status: 'closed', dbId: 102 },
-      { id: 'door4', name: '회의실문', position: [5, 10, 0], status: 'closed', dbId: 103 }
+      { id: 'club_door', name: '동아리 방 문', position: [0, 0, 0], status: 'closed', dbId: 100 }
     ];
     
-    // Google Sheets API 설정
-    let googleSheetsConfig = {
-      apiKey: '',
-      spreadsheetId: '',
-      sheetName: '데이터',
-      isConnected: false
-    };
-    
-    // Google Sheets API 설정 페이지 열기
-    function openGoogleSheetsConfig() {
-      window.open('google-sheets-config.html', '_blank', 'width=1200,height=800');
-    }
-    
-    // Google Sheets API 초기화
-    async function initGoogleSheets() {
+    // Google Sheets API 초기화 (하드코딩된 설정 사용)
+    function initGoogleSheets() {
       try {
-        const saved = localStorage.getItem('googleSheetsConfig');
-        if (saved) {
-          const config = JSON.parse(saved);
-          googleSheetsConfig = { ...googleSheetsConfig, ...config };
-          
-          if (googleSheetsConfig.apiKey && googleSheetsConfig.spreadsheetId) {
-            // 간단한 연결 테스트
-            const testUrl = `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetsConfig.spreadsheetId}?key=${googleSheetsConfig.apiKey}`;
-            const response = await fetch(testUrl);
-            
-            if (response.ok) {
-              isGoogleSheetsConnected = true;
-              updateGoogleSheetsStatus(true);
-              startDataLogging();
-              console.log('Google Sheets 연결 성공');
-            } else {
-              updateGoogleSheetsStatus(false);
-            }
-          }
+        if (!GOOGLE_SHEETS_CONFIG.apiKey || !GOOGLE_SHEETS_CONFIG.spreadsheetId) {
+          console.warn('Google Sheets API 설정이 완료되지 않았습니다. 설정을 완료해주세요.');
+          updateGoogleSheetsStatus(false);
+          return;
         }
+        
+        // 간단한 연결 테스트
+        testGoogleSheetsConnection();
+        
       } catch (error) {
         console.error('Google Sheets 초기화 실패:', error);
+        updateGoogleSheetsStatus(false);
+      }
+    }
+    
+    // Google Sheets 연결 테스트
+    async function testGoogleSheetsConnection() {
+      try {
+        const testUrl = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}?key=${GOOGLE_SHEETS_CONFIG.apiKey}`;
+        const response = await fetch(testUrl);
+        
+        if (response.ok) {
+          isGoogleSheetsConnected = true;
+          updateGoogleSheetsStatus(true);
+          console.log('Google Sheets 연결 성공');
+        } else {
+          const errorData = await response.json();
+          console.error('Google Sheets 연결 실패:', errorData);
+          updateGoogleSheetsStatus(false);
+        }
+      } catch (error) {
+        console.error('Google Sheets 연결 테스트 실패:', error);
         updateGoogleSheetsStatus(false);
       }
     }
@@ -1146,34 +1270,64 @@
       
       // 즉시 한 번 실행
       logDataToGoogleSheets();
+      
+      console.log('Google Sheets 데이터 로깅 시작 (5분 간격)');
     }
     
-    // Google Sheets에 데이터 로깅
-    async function logDataToGoogleSheets() {
+    // 실시간 데이터 동기화 시작 (30초 간격)
+    function startRealtimeSync() {
+      if (syncInterval) {
+        clearInterval(syncInterval);
+      }
+      
+      // 30초마다 실시간 데이터 동기화
+      syncInterval = setInterval(syncRealtimeData, 30 * 1000);
+      
+      // 즉시 한 번 실행
+      syncRealtimeData();
+      
+      console.log('실시간 데이터 동기화 시작 (30초 간격)');
+    }
+    
+    // 실시간 데이터 동기화 (실제 센서 데이터만 사용)
+    async function syncRealtimeData() {
       if (!isGoogleSheetsConnected) return;
       
       try {
         const now = new Date();
+        
+        // 실제 센서 값 읽기 (더미데이터 제거)
+        const tempText = document.getElementById('temp-value').textContent;
+        const humText = document.getElementById('hum-value').textContent;
+        const energyText = document.getElementById('energy-value').textContent;
+        const illuminText = document.getElementById('illumin-value').textContent;
+        
+        // 값이 '--'인 경우 동기화하지 않음
+        if (tempText === '--' || humText === '--' || energyText === '--' || illuminText === '--') {
+          console.log('센서 데이터가 없어 동기화를 건너뜁니다.');
+          return;
+        }
+        
         const data = {
           timestamp: now.toISOString(),
-          temperature: parseFloat(document.getElementById('temp-value').textContent.replace('°C', '')) || 0,
-          humidity: parseFloat(document.getElementById('hum-value').textContent.replace('%', '')) || 0,
-          energy: parseFloat(document.getElementById('energy-value').textContent.replace('kWh', '')) || 0,
+          temperature: parseFloat(tempText.replace('°C', '')) || 0,
+          humidity: parseFloat(humText.replace('%', '')) || 0,
+          energy: parseFloat(energyText.replace('kWh', '')) || 0,
           door_events: doors.filter(d => d.status === 'open').length,
-          illumination: parseFloat(document.getElementById('illumin-value').textContent.replace('lux', '')) || 0
+          illumination: parseFloat(illuminText.replace('lux', '')) || 0
         };
         
-        // 실제 Google Sheets API 호출 (간단화된 버전)
+        // Google Sheets에 데이터 추가
         const values = [[
           data.timestamp,
-          data.temperature,
-          data.humidity,
-          data.energy,
+          data.temperature.toFixed(1),
+          data.humidity.toFixed(0),
+          data.energy.toFixed(1),
           data.door_events,
-          data.illumination
+          data.illumination.toFixed(0)
         ]];
         
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetsConfig.spreadsheetId}/values/${googleSheetsConfig.sheetName}:append?valueInputOption=RAW&key=${googleSheetsConfig.apiKey}`;
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}/values/${GOOGLE_SHEETS_CONFIG.sheetName}:append?valueInputOption=RAW&key=${GOOGLE_SHEETS_CONFIG.apiKey}`;
         
         const response = await fetch(url, {
           method: 'POST',
@@ -1186,15 +1340,51 @@
         });
         
         if (response.ok) {
-          console.log('데이터가 Google Sheets에 기록되었습니다:', data);
+          console.log('실시간 데이터가 Google Sheets에 동기화되었습니다:', data);
+        } else {
+          const errorData = await response.json();
+          console.error('Google Sheets 동기화 실패:', errorData);
         }
         
       } catch (error) {
-        console.error('Google Sheets 데이터 로깅 실패:', error);
+        console.error('실시간 데이터 동기화 실패:', error);
       }
     }
     
-    // 문 상태 초기화 (개선된 버전)
+    // Google Sheets에 데이터 로깅 (기존 함수, 이제 syncRealtimeData와 통합됨)
+    async function logDataToGoogleSheets() {
+      // syncRealtimeData와 동일한 기능이므로 호출만 함
+      await syncRealtimeData();
+    }
+    
+    function showPage(pageName) {
+      const pages = document.querySelectorAll('.page-content');
+      pages.forEach(page => page.classList.remove('active'));
+      
+      const targetPage = document.getElementById(`${pageName}-page`);
+      if (targetPage) {
+        targetPage.classList.add('active');
+        currentPage = pageName;
+        
+        // 통계 페이지로 전환 시 차트 초기화
+        if (pageName === 'statistics') {
+          setTimeout(() => {
+            initializeCharts();
+            refreshStatistics();
+          }, 100);
+        }
+      }
+      
+      // 헤더 버튼 활성화 상태 업데이트
+      const headerBtns = document.querySelectorAll('.header-btn');
+      headerBtns.forEach(btn => btn.classList.remove('active'));
+      
+      if (pageName === 'statistics') {
+        headerBtns[0].classList.add('active');
+      }
+    }
+    
+    // 문 상태 초기화
     function initializeDoors() {
       doors = doorConfig.map(door => ({ ...door }));
       
@@ -1206,7 +1396,29 @@
       updateDoorDisplay();
     }
     
-    // 문 상태 변화 감지 및 처리 (개선된 버전)
+    // 문 상태 표시 업데이트
+    function updateDoorDisplay() {
+      const doorList = document.getElementById('door-list');
+      doorList.innerHTML = '';
+      
+      doors.forEach(door => {
+        const doorItem = document.createElement('div');
+        doorItem.className = `door-item ${door.status}`;
+        doorItem.innerHTML = `
+          <div class="door-name">${door.name}</div>
+          <div class="door-status">
+            <span class="door-indicator ${door.status}"></span>
+            <span>${door.status === 'open' ? '열림' : '닫힘'}</span>
+            <div class="door-actions">
+              <button class="door-action-btn" onclick="focusOnDoor('${door.id}')">보기</button>
+            </div>
+          </div>
+        `;
+        doorList.appendChild(doorItem);
+      });
+    }
+    
+    // 문 상태 변화 감지 및 처리
     function checkDoorStateChanges() {
       doors.forEach(door => {
         const previousState = previousDoorStates[door.id];
@@ -1230,9 +1442,9 @@
       });
     }
     
-    // 문이 열렸을 때 처리 (개선된 버전)
+    // 문이 열렸을 때 처리
     function handleDoorOpened(door) {
-      // 경고 표시 (더 강조된 메시지)
+      // 경고 표시
       showError(`🚨 ${door.name}이 열렸습니다!`);
       
       // 3D 뷰어에서 해당 문으로 카메라 이동
@@ -1243,10 +1455,10 @@
       // 문 색상 변경 및 마커 표시
       highlightDoorInViewer(door, true);
       
-      // 사운드 알림 (옵션)
+      // 사운드 알림
       playNotificationSound();
       
-      // 브라우저 알림 (권한이 있는 경우)
+      // 브라우저 알림
       if (Notification.permission === 'granted') {
         new Notification('문 열림 감지', {
           body: `${door.name}이 열렸습니다.`,
@@ -1284,7 +1496,7 @@
           event.position
         ]];
         
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetsConfig.spreadsheetId}/values/${eventSheetName}:append?valueInputOption=RAW&key=${googleSheetsConfig.apiKey}`;
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}/values/${eventSheetName}:append?valueInputOption=RAW&key=${GOOGLE_SHEETS_CONFIG.apiKey}`;
         
         await fetch(url, {
           method: 'POST',
@@ -1303,7 +1515,7 @@
       }
     }
     
-    // 3D 뷰어에서 문에 포커스 (개선된 버전)
+    // 3D 뷰어에서 문에 포커스
     function focusOnDoor(doorId) {
       const door = doors.find(d => d.id === doorId);
       if (!door || !viewer) return;
@@ -1340,7 +1552,7 @@
       }
     }
     
-    // 3D 뷰어에서 문 하이라이트 (개선된 버전)
+    // 3D 뷰어에서 문 하이라이트
     function highlightDoorInViewer(door, isOpen) {
       if (!viewer || !viewer.model) return;
       
@@ -1376,7 +1588,7 @@
         // 기존 마커 제거
         removeDoorMarker(door.id);
         
-        // 새 마커 생성 (간단한 3D 스프라이트)
+        // 새 마커 생성
         const markerGeometry = new THREE.SphereGeometry(0.5, 8, 8);
         const markerMaterial = new THREE.MeshBasicMaterial({ 
           color: 0xff0000,
@@ -1428,7 +1640,6 @@
     // 알림 사운드 재생
     function playNotificationSound() {
       try {
-        // 간단한 비프 사운드 생성
         const audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const oscillator = audioContext.createOscillator();
         const gainNode = audioContext.createGain();
@@ -1449,67 +1660,8 @@
         console.error('사운드 재생 실패:', error);
       }
     }
-    function showPage(pageName) {
-      const pages = document.querySelectorAll('.page-content');
-      pages.forEach(page => page.classList.remove('active'));
-      
-      const targetPage = document.getElementById(`${pageName}-page`);
-      if (targetPage) {
-        targetPage.classList.add('active');
-        currentPage = pageName;
-        
-        // 통계 페이지로 전환 시 차트 초기화
-        if (pageName === 'statistics') {
-          setTimeout(() => {
-            initializeCharts();
-            refreshStatistics();
-          }, 100);
-        }
-      }
-      
-      // 헤더 버튼 활성화 상태 업데이트
-      const headerBtns = document.querySelectorAll('.header-btn');
-      headerBtns.forEach(btn => btn.classList.remove('active'));
-      
-      if (pageName === 'viewer') {
-        headerBtns[0].classList.add('active');
-      } else if (pageName === 'statistics') {
-        headerBtns[1].classList.add('active');
-      }
-    }
     
-    // 문 상태 초기화
-    function initializeDoors() {
-      doors = [...doorConfig];
-      updateDoorDisplay();
-    }
-    
-    // 문 상태 표시 업데이트
-    function updateDoorDisplay() {
-      const doorList = document.getElementById('door-list');
-      doorList.innerHTML = '';
-      
-      doors.forEach(door => {
-        const doorItem = document.createElement('div');
-        doorItem.className = `door-item ${door.status}`;
-        doorItem.innerHTML = `
-          <div class="door-name">${door.name}</div>
-          <div class="door-status">
-            <span class="door-indicator ${door.status}"></span>
-            <span>${door.status === 'open' ? '열림' : '닫힘'}</span>
-            <div class="door-actions">
-              <button class="door-action-btn" onclick="focusOnDoor('${door.id}')">보기</button>
-              <button class="door-action-btn" onclick="toggleDoor('${door.id}')">
-                ${door.status === 'open' ? '닫기' : '열기'}
-              </button>
-            </div>
-          </div>
-        `;
-        doorList.appendChild(doorItem);
-      });
-    }
-    
-    // 문 상태 토글 (개선된 버전)
+    // 문 상태 토글
     function toggleDoor(doorId) {
       const door = doors.find(d => d.id === doorId);
       if (door) {
@@ -1521,82 +1673,11 @@
         // 디스플레이 업데이트
         updateDoorDisplay();
         
-        // 통계 차트 업데이트 (문 상태가 변경된 경우)
-        if (currentPage === 'statistics' && charts.doors) {
-          charts.doors.data.datasets[0].data = [
-            doors.filter(d => d.status === 'open').length,
-            doors.filter(d => d.status === 'closed').length
-          ];
-          charts.doors.update();
+        // 통계 페이지의 테이블 업데이트
+        if (currentPage === 'statistics') {
+          updateDoorStatusTable();
         }
       }
-    }
-    
-    // 문이 열렸을 때 처리
-    function handleDoorOpened(door) {
-      // 경고 표시
-      showInfo(`${door.name}이 열렸습니다!`);
-      
-      // 3D 뷰어에서 해당 문으로 카메라 이동 (Tandem이 연결된 경우)
-      if (viewer && viewer.model) {
-        focusOnDoor(door.id);
-      }
-      
-      // 문 색상 변경 및 마커 표시
-      highlightDoorInViewer(door);
-    }
-    
-    // 3D 뷰어에서 문에 포커스
-    function focusOnDoor(doorId) {
-      const door = doors.find(d => d.id === doorId);
-      if (!door || !viewer) return;
-      
-      try {
-        // 카메라를 해당 문 위치로 이동
-        const position = door.position;
-        const target = new THREE.Vector3(position[0], position[1], position[2]);
-        const camera = new THREE.Vector3(position[0] + 5, position[1] + 5, position[2] + 5);
-        
-        viewer.navigation.setView(camera, target);
-        showInfo(`${door.name}으로 이동했습니다.`);
-      } catch (error) {
-        console.error('카메라 이동 실패:', error);
-      }
-    }
-    
-    // 3D 뷰어에서 문 하이라이트
-    function highlightDoorInViewer(door) {
-      if (!viewer || !viewer.model) return;
-      
-      try {
-        // 실제 구현에서는 문의 dbId를 찾아서 색상 변경
-        // 여기서는 시뮬레이션으로 처리
-        console.log(`문 하이라이트: ${door.name}`, door);
-        
-        // 마커 추가 (실제로는 viewer.impl에서 처리)
-        // addMarkerToViewer(door.position, door.name);
-      } catch (error) {
-        console.error('문 하이라이트 실패:', error);
-      }
-    }
-    
-    // 문 이벤트 로그
-    function logDoorEvent(door) {
-      const event = {
-        timestamp: new Date().toISOString(),
-        doorId: door.id,
-        doorName: door.name,
-        action: door.status,
-        position: door.position
-      };
-      
-      // 실제로는 서버나 Google Sheets API로 전송
-      console.log('문 이벤트 로그:', event);
-      
-      // 로컬 스토리지에 임시 저장 (실제로는 서버로 전송)
-      const events = JSON.parse(localStorage.getItem('doorEvents') || '[]');
-      events.push(event);
-      localStorage.setItem('doorEvents', JSON.stringify(events));
     }
     
     // 차트 초기화
@@ -1604,11 +1685,11 @@
       if (charts.temperature) {
         charts.temperature.destroy();
       }
+      if (charts.humidity) {
+        charts.humidity.destroy();
+      }
       if (charts.energy) {
         charts.energy.destroy();
-      }
-      if (charts.doors) {
-        charts.doors.destroy();
       }
       
       // 온도 차트
@@ -1629,6 +1710,58 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: 0
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#bfc3ce'
+              }
+            }
+          },
+          scales: {
+            x: {
+              ticks: {
+                color: '#8fa0b2'
+              },
+              grid: {
+                color: '#292c31'
+              }
+            },
+            y: {
+              ticks: {
+                color: '#8fa0b2'
+              },
+              grid: {
+                color: '#292c31'
+              }
+            }
+          }
+        }
+      });
+      
+      // 습도 차트
+      const humidityCtx = document.getElementById('humidity-chart').getContext('2d');
+      charts.humidity = new Chart(humidityCtx, {
+        type: 'line',
+        data: {
+          labels: generateTimeLabels('day'),
+          datasets: [{
+            label: '습도 (%)',
+            data: generateHumidityData(),
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: 0
+          },
           plugins: {
             legend: {
               labels: {
@@ -1674,6 +1807,9 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          layout: {
+            padding: 0
+          },
           plugins: {
             legend: {
               labels: {
@@ -1702,31 +1838,9 @@
         }
       });
       
-      // 문 상태 차트
-      const doorsCtx = document.getElementById('doors-chart').getContext('2d');
-      charts.doors = new Chart(doorsCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['열린 문', '닫힌 문'],
-          datasets: [{
-            data: [doors.filter(d => d.status === 'open').length, doors.filter(d => d.status === 'closed').length],
-            backgroundColor: ['#ff6b6b', '#28a745'],
-            borderColor: ['#ff6b6b', '#28a745'],
-            borderWidth: 2
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              labels: {
-                color: '#bfc3ce'
-              }
-            }
-          }
-        }
-      });
+      // 테이블 데이터 초기화
+      updateDoorStatusTable();
+      updateAllDataTable();
     }
     
     // 시간 라벨 생성
@@ -1754,22 +1868,154 @@
       return labels;
     }
     
-    // 온도 데이터 생성 (시뮬레이션)
+    // 온도 데이터 생성 (실제 데이터만 사용)
     function generateTemperatureData() {
-      const data = [];
-      for (let i = 0; i < 24; i++) {
-        data.push(20 + Math.sin(i / 4) * 3 + Math.random() * 2);
-      }
-      return data;
+      // 더미데이터 제거 - 빈 배열 반환
+      return [];
     }
     
-    // 에너지 데이터 생성 (시뮬레이션)
+    // 습도 데이터 생성 (실제 데이터만 사용)
+    function generateHumidityData() {
+      // 더미데이터 제거 - 빈 배열 반환
+      return [];
+    }
+    
+    // 에너지 데이터 생성 (실제 데이터만 사용)
     function generateEnergyData() {
-      const data = [];
-      for (let i = 0; i < 24; i++) {
-        data.push(50 + Math.random() * 30 + (i > 8 && i < 18 ? 20 : 0));
+      // 더미데이터 제거 - 빈 배열 반환
+      return [];
+    }
+    
+    // 문 상태 테이블 업데이트 (실제 데이터만 사용)
+    function updateDoorStatusTable() {
+      const tableBody = document.getElementById('door-status-table');
+      tableBody.innerHTML = '';
+      
+      doors.forEach(door => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+          <td>${door.name}</td>
+          <td><span class="status-badge ${door.status}">${door.status === 'open' ? '열림' : '닫힘'}</span></td>
+          <td>데이터 없음</td>
+          <td>-</td>
+          <td>
+            <button class="door-action-btn" onclick="focusOnDoor('${door.id}')">보기</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+    
+    // 전체 데이터 테이블 업데이트 (실제 데이터만 사용)
+    function updateAllDataTable() {
+      const tableBody = document.getElementById('all-data-table');
+      tableBody.innerHTML = '';
+      
+      // 더미데이터 제거 - 데이터 없음 메시지 표시
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td colspan="6" style="text-align: center; color: #8fa0b2; padding: 20px;">
+          Google Sheets에서 데이터를 가져오려면 '새로고침' 버튼을 클릭하세요
+        </td>
+      `;
+      tableBody.appendChild(row);
+    }
+    
+    // 문 데이터 새로고침 (실제 데이터만 사용)
+    function refreshDoorData() {
+      updateDoorStatusTable();
+      showInfo('문 상태 데이터를 확인했습니다.');
+    }
+    
+    // 전체 데이터 테이블 새로고침 (Google Sheets에서만 데이터 로드)
+    function refreshDataTable() {
+      if (isGoogleSheetsConnected) {
+        loadDataFromGoogleSheets();
+      } else {
+        updateAllDataTable();
+        showInfo('Google Sheets에 연결 후 데이터를 확인할 수 있습니다.');
       }
-      return data;
+    }
+    
+    // Google Sheets에서 데이터 로드하여 테이블 업데이트
+    async function loadDataFromGoogleSheets() {
+      try {
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}/values/${GOOGLE_SHEETS_CONFIG.sheetName}?key=${GOOGLE_SHEETS_CONFIG.apiKey}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          throw new Error('Google Sheets 데이터를 가져올 수 없습니다.');
+        }
+        
+        const data = await response.json();
+        const rows = data.values || [];
+        
+        if (rows.length < 2) {
+          throw new Error('충분한 데이터가 없습니다.');
+        }
+        
+        // 헤더 제외하고 최근 20개 데이터
+        const dataRows = rows.slice(-21).slice(1); // 마지막 21개에서 헤더 제외
+        
+        const tableBody = document.getElementById('all-data-table');
+        tableBody.innerHTML = '';
+        
+        dataRows.reverse().forEach(row => {
+          const tableRow = document.createElement('tr');
+          const timestamp = new Date(row[0]).toLocaleString('ko-KR');
+          
+          tableRow.innerHTML = `
+            <td>${timestamp}</td>
+            <td>${parseFloat(row[1] || 0).toFixed(1)}°C</td>
+            <td>${Math.round(parseFloat(row[2] || 0))}%</td>
+            <td>${parseFloat(row[3] || 0).toFixed(1)} kWh</td>
+            <td>${parseInt(row[4] || 0)}</td>
+            <td>${Math.round(parseFloat(row[5] || 0))} lux</td>
+          `;
+          tableBody.appendChild(tableRow);
+        });
+        
+        showSuccess('Google Sheets에서 데이터를 성공적으로 로드했습니다.');
+        
+      } catch (error) {
+        console.error('Google Sheets 데이터 로드 실패:', error);
+        showError('Google Sheets 데이터 로드 실패: ' + error.message);
+        
+        // 실패 시 시뮬레이션 데이터 사용
+        updateAllDataTable();
+      }
+    }
+    
+    // 데이터 테이블 CSV 내보내기
+    function exportDataTable() {
+      const table = document.getElementById('all-data-table');
+      const rows = table.querySelectorAll('tr');
+      const csv = [];
+      
+      // 헤더 추가
+      csv.push('시간,온도(°C),습도(%),에너지(kWh),문이벤트,조도(lux)');
+      
+      // 데이터 행 추가
+      rows.forEach(row => {
+        const cols = row.querySelectorAll('td');
+        const rowData = Array.from(cols).map(col => col.textContent.trim());
+        csv.push(rowData.join(','));
+      });
+      
+      // CSV 파일 다운로드
+      const csvContent = csv.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `digital_twin_data_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showSuccess('CSV 파일이 다운로드되었습니다.');
     }
     
     // 차트 기간 설정
@@ -1790,19 +2036,20 @@
       }
     }
     
-    // 통계 새로고침 (Google Sheets 연동)
+    // 통계 새로고침 (실제 데이터만 사용)
     function refreshStatistics() {
       showInfo('통계 데이터를 새로고침합니다...');
       
       if (isGoogleSheetsConnected) {
         // Google Sheets에서 실제 데이터 가져오기
         loadStatisticsFromGoogleSheets();
+        loadDataFromGoogleSheets(); // 테이블 데이터도 함께 로드
       } else {
-        // 시뮬레이션 데이터 사용
+        // 더미데이터 제거 - 빈 상태로 표시
         setTimeout(() => {
           updateStatisticsFromSimulation();
           updateChartsWithSimulationData();
-          showSuccess('시뮬레이션 데이터로 통계가 업데이트되었습니다.');
+          showInfo('Google Sheets에 연결하여 실제 데이터를 확인하세요.');
         }, 1000);
       }
     }
@@ -1810,7 +2057,7 @@
     // Google Sheets에서 통계 데이터 로드
     async function loadStatisticsFromGoogleSheets() {
       try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetsConfig.spreadsheetId}/values/${googleSheetsConfig.sheetName}?key=${googleSheetsConfig.apiKey}`;
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.spreadsheetId}/values/${GOOGLE_SHEETS_CONFIG.sheetName}?key=${GOOGLE_SHEETS_CONFIG.apiKey}`;
         const response = await fetch(url);
         
         if (!response.ok) {
@@ -1844,6 +2091,11 @@
         // 차트 업데이트
         updateChartsWithRealData(recentData);
         
+        // 전체 데이터 테이블도 업데이트 (비동기로)
+        setTimeout(() => {
+          loadDataFromGoogleSheets();
+        }, 500);
+        
         showSuccess('Google Sheets 데이터로 통계가 업데이트되었습니다.');
         
       } catch (error) {
@@ -1875,59 +2127,60 @@
         charts.temperature.update();
       }
       
+      if (charts.humidity) {
+        const humidityData = data.slice(-24).map(row => parseFloat(row[2]) || 0);
+        charts.humidity.data.datasets[0].data = humidityData;
+        charts.humidity.update();
+      }
+      
       if (charts.energy) {
         const energyData = data.slice(-24).map(row => parseFloat(row[3]) || 0);
         charts.energy.data.datasets[0].data = energyData;
         charts.energy.update();
       }
       
-      if (charts.doors) {
-        charts.doors.data.datasets[0].data = [
-          doors.filter(d => d.status === 'open').length,
-          doors.filter(d => d.status === 'closed').length
-        ];
-        charts.doors.update();
-      }
+      // 테이블도 함께 업데이트
+      updateDoorStatusTable();
     }
     
-    // 시뮬레이션 데이터로 차트 업데이트
+    // 시뮬레이션 데이터로 차트 업데이트 (더미데이터 제거)
     function updateChartsWithSimulationData() {
+      // 더미데이터 제거 - Google Sheets 연결을 안내
+      showInfo('Google Sheets에 연결하여 실제 데이터를 확인하세요.');
+      
+      // 빈 차트로 초기화
       if (charts.temperature) {
-        charts.temperature.data.datasets[0].data = generateTemperatureData();
+        charts.temperature.data.datasets[0].data = [];
         charts.temperature.update();
       }
+      if (charts.humidity) {
+        charts.humidity.data.datasets[0].data = [];
+        charts.humidity.update();
+      }
       if (charts.energy) {
-        charts.energy.data.datasets[0].data = generateEnergyData();
+        charts.energy.data.datasets[0].data = [];
         charts.energy.update();
       }
-      if (charts.doors) {
-        charts.doors.data.datasets[0].data = [
-          doors.filter(d => d.status === 'open').length,
-          doors.filter(d => d.status === 'closed').length
-        ];
-        charts.doors.update();
-      }
-    }
-    
-    // Google Sheets에서 통계 데이터 업데이트
-    function updateStatisticsFromGoogleSheets() {
-      // 이 함수는 loadStatisticsFromGoogleSheets로 대체됨
-    }
-    
-    // 시뮬레이션 데이터로 통계 업데이트
-    function updateStatisticsFromSimulation() {
-      const avgTemp = (22 + Math.random() * 4).toFixed(1);
-      const avgHumidity = Math.floor(55 + Math.random() * 10);
-      const totalEnergy = Math.floor(1200 + Math.random() * 100);
-      const doorEvents = JSON.parse(localStorage.getItem('doorEvents') || '[]').length;
       
-      document.getElementById('avg-temp').textContent = avgTemp + '°C';
-      document.getElementById('avg-humidity').textContent = avgHumidity + '%';
-      document.getElementById('total-energy').textContent = totalEnergy.toLocaleString() + ' kWh';
-      document.getElementById('door-events').textContent = doorEvents;
+      // 테이블도 빈 상태로 업데이트
+      updateDoorStatusTable();
+      updateAllDataTable();
     }
     
-    // Tandem 초기화 함수 (간단화된 버전)
+    // 통계 업데이트 (더미데이터 제거)
+    function updateStatisticsFromSimulation() {
+      // 더미데이터 제거 - 빈 값으로 표시
+      document.getElementById('avg-temp').textContent = '--';
+      document.getElementById('avg-humidity').textContent = '--';
+      document.getElementById('total-energy').textContent = '--';
+      document.getElementById('door-events').textContent = '--';
+      
+      // 테이블도 빈 상태로 업데이트
+      updateDoorStatusTable();
+      updateAllDataTable();
+    }
+    
+    // Tandem 초기화 함수
     async function initializeTandem() {
       const connectBtn = document.getElementById('connect-btn');
       const connectText = document.getElementById('connect-text');
@@ -1949,7 +2202,21 @@
         connectBtn.classList.add('active');
         statusIndicator.classList.add('connected');
         
-        showSuccess('Tandem에 성공적으로 연결되었습니다.');
+        // Tandem 연결 성공 시 Google Sheets도 자동으로 연결 시도
+        if (!isGoogleSheetsConnected) {
+          showInfo('Google Sheets 연결을 시도합니다...');
+          await testGoogleSheetsConnection();
+          
+          if (isGoogleSheetsConnected) {
+            // 실시간 데이터 동기화 시작
+            startRealtimeSync();
+            showSuccess('Tandem 및 Google Sheets에 성공적으로 연결되었습니다.');
+          } else {
+            showSuccess('Tandem에 연결되었습니다. Google Sheets 설정을 확인해주세요.');
+          }
+        } else {
+          showSuccess('Tandem에 성공적으로 연결되었습니다.');
+        }
         
       } catch (error) {
         connectText.textContent = 'Tandem 연결';
@@ -1957,26 +2224,16 @@
       }
     }
     
-    // 실시간 데이터 업데이트
+    // 실시간 데이터 업데이트 (더미데이터 제거)
     async function fetchStatus() {
       try {
-        // 시뮬레이션 데이터
-        const now = new Date();
-        const temp = (20 + Math.sin(now.getMinutes() / 10) * 3).toFixed(1) + '°C';
-        const hum = (50 + Math.cos(now.getMinutes() / 8) * 10).toFixed(0) + '%';
-        const energy = (Math.random() * 50 + 100).toFixed(1) + 'kWh';
-        const illumin = (Math.random() * 200 + 300).toFixed(0) + 'lux';
+        // 더미데이터 제거 - 빈 값으로 표시
+        document.getElementById('temp-value').textContent = '--';
+        document.getElementById('hum-value').textContent = '--';
+        document.getElementById('energy-value').textContent = '--';
+        document.getElementById('illumin-value').textContent = '--';
         
-        document.getElementById('temp-value').textContent = temp;
-        document.getElementById('hum-value').textContent = hum;
-        document.getElementById('energy-value').textContent = energy;
-        document.getElementById('illumin-value').textContent = illumin;
-        
-        // 랜덤하게 문 상태 변경 (시뮬레이션)
-        if (Math.random() < 0.1) {
-          const randomDoor = doors[Math.floor(Math.random() * doors.length)];
-          toggleDoor(randomDoor.id);
-        }
+        // 더미 문 상태 변경 제거 - 실제 센서 데이터만 사용
         
       } catch (e) {
         console.log('실시간 데이터 업데이트 실패:', e);
@@ -2006,7 +2263,63 @@
       showMessage('info', message);
     }
     
-    // 초기화 (최종 버전)
+    // 브라우저 호환성 체크
+    function checkBrowserCompatibility() {
+      return !!(window.fetch && window.Promise && window.localStorage);
+    }
+    
+    // 알림 권한 요청
+    function requestNotificationPermission() {
+      if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission().then(permission => {
+          if (permission === 'granted') {
+            showSuccess('브라우저 알림이 활성화되었습니다.');
+          }
+        });
+      }
+    }
+    
+    // 페이지 가시성 변경 처리
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        // 페이지가 숨겨졌을 때
+        console.log('페이지가 백그라운드로 전환됨');
+      } else {
+        // 페이지가 다시 보일 때
+        console.log('페이지가 포그라운드로 전환됨');
+        fetchStatus(); // 실시간 데이터 즉시 업데이트
+      }
+    }
+    
+    // 더미 함수들 (Tandem API 관련)
+    function onTeamChange() {
+      // 실제 구현에서는 Tandem API 호출
+      console.log('팀 변경됨');
+    }
+    
+    function onFacilityChange() {
+      // 실제 구현에서는 Tandem API 호출
+      console.log('시설 변경됨');
+    }
+    
+    function onViewChange() {
+      // 실제 구현에서는 Tandem API 호출
+      console.log('뷰 변경됨');
+    }
+    
+    function loadSelectedView() {
+      // 실제 구현에서는 Tandem API 호출
+      console.log('선택된 뷰 로드');
+      showInfo('뷰 로드 기능은 실제 Tandem API 연결 시 활성화됩니다.');
+    }
+    
+    function loadDirectURN() {
+      // 실제 구현에서는 URN으로 직접 로드
+      console.log('URN 직접 로드');
+      showInfo('URN 로드 기능은 실제 Tandem API 연결 시 활성화됩니다.');
+    }
+    
+    // 초기화
     window.addEventListener('load', () => {
       console.log('🚀 Digital Twin Dashboard 초기화 시작...');
       
@@ -2018,17 +2331,8 @@
       // 기본 초기화
       initializeDoors();
       
-      // 자동 저장된 상태 복원
-      restoreAutoSavedState();
-      
       // Google Sheets API 초기화
       initGoogleSheets();
-      
-      // 성능 모니터링 시작
-      startPerformanceMonitoring();
-      
-      // 자동 저장 활성화
-      enableAutoSave();
       
       // 알림 권한 요청 (5초 후)
       setTimeout(requestNotificationPermission, 5000);
@@ -2037,7 +2341,10 @@
       document.addEventListener('visibilitychange', handleVisibilityChange);
       
       // 환영 메시지
-      showInfo('🎉 Digital Twin Dashboard가 준비되었습니다! F1을 눌러 단축키를 확인하세요.');
+      showInfo('🎉 Digital Twin Dashboard가 준비되었습니다! Google Sheets에 연결하여 실제 데이터를 확인하세요.');
+      
+      // 홈 버튼 기본 활성화
+      document.getElementById('home-btn').classList.add('active');
       
       // 실시간 데이터 업데이트 시작 (30초마다)
       setInterval(fetchStatus, 30000);
@@ -2054,14 +2361,14 @@
         console.log(`📊 Google Sheets 연동: ${isGoogleSheetsConnected ? '✅ 연결됨' : '❌ 미연결'}`);
         console.log(`🔔 알림 권한: ${Notification.permission}`);
         console.log(`🚪 모니터링 중인 문: ${doors.length}개`);
-        console.log(`💾 자동 저장: 활성화됨 (5분 간격)`);
-        console.log(`📱 성능 모니터링: 활성화됨`);
+        console.log('📌 더미데이터 제거됨 - 실제 센서 데이터만 사용');
         
-        // 개발자를 위한 팁
-        console.log('\n💡 개발자 팁:');
-        console.log('- F1: 키보드 단축키 보기');
-        console.log('- 콘솔에서 doors, charts, viewer 변수로 직접 제어 가능');
-        console.log('- localStorage에 설정과 상태가 자동 저장됨');
+        if (!isGoogleSheetsConnected) {
+          console.log('⚠️  Google Sheets API 설정을 완료해주세요:');
+          console.log('   - GOOGLE_SHEETS_CONFIG.apiKey');
+          console.log('   - GOOGLE_SHEETS_CONFIG.spreadsheetId');
+          console.log('   ※ 실제 센서 데이터 확인을 위해 연결이 필요합니다.');
+        }
       }, 2000);
     });
   </script>
